@@ -1,24 +1,27 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using JobRoulette.Game;
 using Lumina.Excel.Sheets;
 
-namespace SamplePlugin.Windows;
+namespace JobRoulette.Windows;
 
 public class MainWindow : Window, IDisposable
 {
     private readonly string goatImagePath;
     private readonly Plugin plugin;
+    public List<bool> GearsetOptions { get; set; } = new();
 
     // We give this window a hidden ID using ##.
     // The user will see "My Amazing Window" as window title,
     // but for ImGui the ID is "My Amazing Window##With a hidden ID"
     public MainWindow(Plugin plugin, string goatImagePath)
-        : base("My Amazing Window##With a hidden ID", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        : base("GearsetList##Gearsets", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -51,26 +54,27 @@ public class MainWindow : Window, IDisposable
             // Check if this child is drawing
             if (child.Success)
             {
-                ImGui.Text("Have a goat:");
-                var goatImage = Plugin.TextureProvider.GetFromFile(goatImagePath).GetWrapOrDefault();
-                if (goatImage != null)
-                {
-                    using (ImRaii.PushIndent(55f))
-                    {
-                        ImGui.Image(goatImage.Handle, goatImage.Size);
-                    }
-                }
-                else
-                {
-                    ImGui.Text("Image not found.");
-                }
+                //ImGui.Text("Have a goat:");
+                //var goatImage = Plugin.TextureProvider.GetFromFile(goatImagePath).GetWrapOrDefault();
+                //if (goatImage != null)
+                //{
+                //    using (ImRaii.PushIndent(55f))
+                //    {
+                //        ImGui.Image(goatImage.Handle, goatImage.Size);
+                //    }
+                //}
+                //else
+                //{
+                //    ImGui.Text("Image not found.");
+                //}
 
-                ImGuiHelpers.ScaledDummy(20.0f);
+                //ImGuiHelpers.ScaledDummy(20.0f);
 
                 // Example for other services that Dalamud provides.
                 // PlayerState provides a wrapper filled with information about the player character.
 
                 var playerState = Plugin.PlayerState;
+                var gearset = Plugin.DataManager.GameData.DataPath.Name;
                 if (!playerState.IsLoaded)
                 {
                     ImGui.Text("Our local player is currently not logged in.");
@@ -103,19 +107,39 @@ public class MainWindow : Window, IDisposable
                 
                 ImGui.SameLine();
                 ImGui.Text($" [Level {playerState.Level}]");
+
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text($"Current Weapon:");
+                ImGui.SameLine();
+                ImGui.Text(playerState.CharacterName.ToString());
+
+                // Create list of gearsets
                 
-                // Example for querying Lumina, getting the name of our current area.
-                var territoryId = Plugin.ClientState.TerritoryType;
-                if (Plugin.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
+
+                // Can't ref a property, so use a local copy
+                var optionValues = GearsetOptions.ToArray();
+                for (var i = 0; i < optionValues.Length; i++)
                 {
-                    ImGui.Text($"Current location:");
-                    ImGui.SameLine(120 * ImGuiHelpers.GlobalScale);
-                    ImGui.Text(territoryRow.PlaceName.Value.Name.ToString());
+                    if (ImGui.Checkbox($"Gearset: " + i, ref optionValues[i]))
+                    {
+                        GearsetOptions[i] = optionValues[i];
+                        // Can save immediately on change if you don't want to provide a "Save and Close" button
+                        plugin.Configuration.Save();
+                    }
                 }
-                else
-                {
-                    ImGui.Text("Invalid territory.");
-                }
+
+                //// Example for querying Lumina, getting the name of our current area.
+                //var territoryId = Plugin.ClientState.TerritoryType;
+                //if (Plugin.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
+                //{
+                //    ImGui.Text($"Current location:");
+                //    ImGui.SameLine(120 * ImGuiHelpers.GlobalScale);
+                //    ImGui.Text(territoryRow.PlaceName.Value.Name.ToString());
+                //}
+                //else
+                //{
+                //    ImGui.Text("Invalid territory.");
+                //}
             }
         }
     }

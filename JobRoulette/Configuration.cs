@@ -1,7 +1,8 @@
-﻿using Dalamud.Configuration;
+using Dalamud.Configuration;
 using System;
+using System.Collections.Generic;
 
-namespace SamplePlugin;
+namespace JobRoulette;
 
 [Serializable]
 public class Configuration : IPluginConfiguration

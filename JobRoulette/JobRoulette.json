@@ -1,0 +1,12 @@
+{
+  "Author": "Redaun Amarién",
+  "Name": "Job Roulette",
+  "Punchline": "Choose a random job so you don't have to pick!",
+  "Description": "Defaults to jobs you have at max level. Use /jobro to randomly select a job from your available choices. Use /jobrolist to select or deselect jobs.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "sample",
+    "plugin",
+    "goats"
+  ]
+}
